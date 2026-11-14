@@ -62,6 +62,41 @@ def decideOperation():
     else:
         return '-'
 
+def isCorrect(user_text, correct, attempt):
+    #checks the answer, shows a message, returns True or False
+    if user_text.strip() == str(correct):
+        feedback_label.config(text="Correct!", fg='lightgreen')
+        return True
+    elif attempt == 1:
+        feedback_label.config(text="Wrong, try once more!", fg='orange')
+        return False
+    else:
+        feedback_label.config(text=f"Wrong, the answer was {correct}", fg='red')
+        return False
+
+def submitAnswer():
+    user_text = answer_entry.get()
+    if isCorrect(user_text, game["answer"], game["attempt"]):
+        if game["attempt"] == 1:
+            game["score"] += 10         #right first time
+        else:
+            game["score"] += 5          #right on second go
+        nextQuestion()
+    else:
+        if game["attempt"] == 1:
+            game["attempt"] = 2         #give them one more chance
+            answer_entry.delete(0, END)
+        else:
+            nextQuestion()              #used both chances, move on
+
+def nextQuestion():
+    if game["question"] == 10:
+        print("Quiz finished")          #TEMPORARY, replaced in Phase 7
+    else:
+        displayProblem()
+#the submit button now gets its command
+#submit_button = Button(quiz_frame, ..., command=submitAnswer)
+
 #QUIZ SCREEN
 quiz_frame = Frame(root, bg=BG)
 quiz_frame.place(x=0, y=0, width=500, height=400)
