@@ -18,6 +18,34 @@ def displayMenu():
     #Replace with: quiz_frame.tkraise() or results_frame.tkraise() to preview it
     menu_frame.tkraise()
 
+def startQuiz(level):
+    #resets everything and begins a new play
+    game["level"] = level
+    game["score"] = 0
+    game["question"] = 0
+    feedback_label.config(text="")
+    quiz_frame.tkraise()
+    displayProblem()
+
+def displayProblem():
+    #makes a new question and shows it on the quiz screen
+    game["question"] += 1
+    game["attempt"] = 1
+    game["num1"] = randomInt(game["level"])
+    game["num2"] = randomInt(game["level"])
+    game["op"] = decideOperation()
+
+    #work out the right answer
+    if game["op"] == '+':
+        game["answer"] = game["num1"] + game["num2"]
+    else:
+        game["answer"] = game["num1"] - game["num2"]
+
+    question_label.config(text=f"Question {game['question']} of 10")
+    score_label.config(text=f"Score: {game['score']}")
+    problem_label.config(text=f"{game['num1']} {game['op']} {game['num2']} =")
+    answer_entry.delete(0, END)# empty the box for the new question
+
 def randomInt(level):
     #min and max depend on the difficulty level
     if level == 1:
