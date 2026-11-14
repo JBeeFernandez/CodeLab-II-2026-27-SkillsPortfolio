@@ -1,4 +1,5 @@
 from tkinter import *
+import random #random number generator (from the resources folder)
 
 root = Tk()
 root.title("Maths Quiz")
@@ -7,11 +8,31 @@ root.resizable(0, 0)
 BG = '#234567'
 root['bg'] = BG
 
+#GAME INFOS
+game = {"level": 1, "question": 0, "attempt": 1, "score": 0,
+        "num1": 0, "num2": 0, "op": "+", "answer": 0}
+
 #FUNCTIONS
 def displayMenu():
-    #brings the menu screen to the front
+    #brings the specific screen to the front
+    #Replace with: quiz_frame.tkraise() or results_frame.tkraise() to preview it
     menu_frame.tkraise()
 
+def randomInt(level):
+    #min and max depend on the difficulty level
+    if level == 1:
+        return random.randint(0, 9)         #easy: single digit
+    elif level == 2:
+        return random.randint(10, 99)       #moderate: double digit
+    else:
+        return random.randint(1000, 9999)   #advanced: 4 digits
+
+def decideOperation():
+    #randomly picks addition or subtraction and returns the character
+    if random.randint(1, 2) == 1:
+        return '+'
+    else:
+        return '-'
 
 #QUIZ SCREEN
 quiz_frame = Frame(root, bg=BG)
@@ -61,4 +82,8 @@ Button(menu_frame, text="3. Advanced (4 digits)", width=22, font=('Roboto', 12),
 
 #calling the display menu for it to appear first
 displayMenu()
+
+#quick test
+print(randomInt(1), randomInt(2), randomInt(3), decideOperation())
+
 root.mainloop()
