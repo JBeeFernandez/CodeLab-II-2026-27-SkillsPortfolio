@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import random #random number generator (from the resources folder)
 
 root = Tk()
@@ -96,6 +97,32 @@ def nextQuestion():
         displayProblem()
 #the submit button now gets its command
 #submit_button = Button(quiz_frame, ..., command=submitAnswer)
+
+def displayResults():
+    score = game["score"]
+    #rank based on score out of 100
+    if score > 90:
+        rank = "A+"
+    elif score >= 80:
+        rank = "A"
+    elif score >= 70:
+        rank = "B"
+    elif score >= 60:
+        rank = "C"
+    elif score >= 50:
+        rank = "D"
+    else:
+        rank = "F"
+    result_label.config(text=f"Your score: {score} / 100")
+    rank_label.config(text=f"Rank: {rank}")
+    results_frame.tkraise()
+
+def playAgain():
+    answer = messagebox.askyesno("Play again?", "Would you like to play again?")
+    if answer:
+        displayMenu()
+    else:
+        rank_label.config(text="Thanks for playing!")
 
 #QUIZ SCREEN
 quiz_frame = Frame(root, bg=BG)
