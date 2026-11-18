@@ -1,90 +1,81 @@
 from tkinter import *
-import random
-from tkinter import messagebox
+from tkinter import messagebox #For the quit box
+import random #RNG
 
+#WINDOW SETUP
 root = Tk()
 root.title("Alexa Joke Assistant")
 root.geometry("700x400")
 root.resizable(0, 0)
-BG = '#234567' #using the same background
+BG = '#234567'
 root['bg'] = BG
 
-#Joke info
+#JOKE INFO
 current = {"last": -1, "punchline": ""}
 
 #FUNCTIONS
+#This reads randomJokes.txt, then cleans each line, splits it at the first "?" and returns a list of [setup, punchline] pairs. I tested it by printing the list.
 def loadJokes():
-    #reads randomJokes.txt and returns a list of [setup, punchline] pairs
     joke_list = []
     with open("randomJokes.txt", "r", encoding="utf-8") as file_handler:
         lines = file_handler.readlines()
     for line in lines:
-        line = line.strip().replace("- ", "", 1)   #drop a leading "- " if the file has one
-        if "?" in line:                            #also skips blank lines
-            parts = line.split("?", 1)             #split at the first ? only
-            joke_list.append([parts[0] + "?", parts[1]])   #put the ? back on the setup
+        line = line.strip().replace("- ", "", 1)
+        if "?" in line:
+            parts = line.split("?", 1)
+            joke_list.append([parts[0] + "?", parts[1]])
     return joke_list
 
-def tellJoke():
-    #picks a random joke, shows its setup and keeps the punchline for later
-    number = random.randint(0, len(jokes) - 1)
-    setup_label.config(text=jokes[number][0])
-    punchline_label.config(text="")           #clear the old punchline
-    current["punchline"] = jokes[number][1]
-    joke_frame.tkraise()                      #switch to the joke screen
-
-def showPunchline():
-    #shows the stored punchline below the setup
-    punchline_label.config(text=current["punchline"])
-# Button(start_frame, text="Alexa tell me a Joke", ..., command=tellJoke)
-
 def pickJoke():
-    #picks a random joke number, never the same one twice in a row
     number = random.randint(0, len(jokes) - 1)
+    #the while loop re-picks a random number so the same joke never appears twice in a row.
     while number == current["last"] and len(jokes) > 1:
         number = random.randint(0, len(jokes) - 1)
     current["last"] = number
     return number
 
+#it shows the setup, keeps the punchline in the current dictionary until "Show Punchline" is pressed, then switches to the joke screen.
+def tellJoke():
+    number = pickJoke()
+    setup_label.config(text=jokes[number][0])
+    punchline_label.config(text="")
+    current["punchline"] = jokes[number][1]
+    joke_frame.tkraise()
+
+def showPunchline():
+    punchline_label.config(text=current["punchline"])
+
 def quitApp():
-    #asks first, then closes the window if the user says yes
     answer = messagebox.askyesno("Quit", "Do you want to close the app?")
     if answer:
         root.destroy()
 
-#Loading Jokes
+#LOADING THE JOKES
 jokes = loadJokes()
 
-#start screen
+#START SCREEN
 start_frame = Frame(root, bg=BG)
 start_frame.place(x=0, y=0, width=700, height=400)
 Label(start_frame, text="Joke Assistant", font=('Roboto', 28), bg=BG, fg='white').pack(pady=30)
 Label(start_frame, text="Want to hear something funny?", font=('Roboto', 14), bg=BG, fg='yellow').pack(pady=10)
+Button(start_frame, text="Alexa tell me a Joke", width=25, font=('Roboto', 14),
+       bg='#001111', fg='yellow', command=tellJoke).pack(pady=20)
+Button(start_frame, text="Quit", width=25, font=('Roboto', 14),
+       bg='#001111', fg='yellow', command=quitApp).pack(pady=5)
 
-#Joke screen
+#JOKE SCREEN
 joke_frame = Frame(root, bg=BG)
 joke_frame.place(x=0, y=0, width=700, height=400)
-
-setup_label = Label(joke_frame, text="Setup shows here?", font=('Roboto', 14), bg=BG, fg='white')
+setup_label = Label(joke_frame, text="", font=('Roboto', 14), bg=BG, fg='white')
 setup_label.pack(pady=40)
-punchline_label = Label(joke_frame, text="Punchline shows here", font=('Roboto', 14), bg=BG, fg='yellow')
+punchline_label = Label(joke_frame, text="", font=('Roboto', 14), bg=BG, fg='yellow')
 punchline_label.pack(pady=10)
 Button(joke_frame, text="Show Punchline", width=20, font=('Roboto', 12),
-       bg='#001111', fg='yellow').pack(pady=8)
+       bg='#001111', fg='yellow', command=showPunchline).pack(pady=8)
 Button(joke_frame, text="Next Joke", width=20, font=('Roboto', 12),
-       bg='#001111', fg='yellow').pack(pady=8)
+       bg='#001111', fg='yellow', command=tellJoke).pack(pady=8)
 Button(joke_frame, text="Quit", width=20, font=('Roboto', 12),
-       bg='#001111', fg='yellow').pack(pady=8)
+       bg='#001111', fg='yellow', command=quitApp).pack(pady=8)
 
-#adding joke generator buttons
-Button(start_frame, text="Alexa tell me a Joke", width=25, font=('Roboto', 14),
-       bg='#001111', fg='yellow').pack(pady=20)
-Button(start_frame, text="Quit", width=25, font=('Roboto', 14),
-       bg='#001111', fg='yellow').pack(pady=5)
-
-#start_frame & joke_frame
-joke_frame.tkraise()
-
-#added temp test
-print(len(jokes), jokes[0])
+start_frame.tkraise()
 root.mainloop()
