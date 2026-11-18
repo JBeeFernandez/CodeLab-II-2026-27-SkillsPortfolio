@@ -15,7 +15,6 @@ root['bg'] = BG
 #===============
 #GAME INFO (a dictionary so functions can change it)
 
-# AI reference: Claude | the game dictionary was suggested so the functions can update the score and question number
 game = {"level": 1, "question": 0, "attempt": 1, "score": 0,
         "num1": 0, "num2": 0, "op": "+", "answer": 0}
 
@@ -75,7 +74,7 @@ def isCorrect(user_text, correct, attempt):
         return False
 
 
-# AI reference: Claude | the 10/5 point scoring and the second attempt logic were generated for this
+# AI reference: Claude | the 10/5 point scoring and the second attempt logic had a bit of help for this fixing errors
 def submitAnswer():
     user_text = answer_entry.get()
     if isCorrect(user_text, game["answer"], game["attempt"]):

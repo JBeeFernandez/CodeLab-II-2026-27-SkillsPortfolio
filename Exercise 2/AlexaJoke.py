@@ -4,8 +4,24 @@ root = Tk()
 root.title("Alexa Joke Assistant")
 root.geometry("700x400")
 root.resizable(0, 0)
-BG = '#234567' #gonna use the same background
+BG = '#234567' #using the same background
 root['bg'] = BG
+
+#FUNCTIONS
+def loadJokes():
+    # reads randomJokes.txt and returns a list of [setup, punchline] pairs
+    joke_list = []
+    with open("randomJokes.txt", "r", encoding="utf-8") as file_handler:
+        lines = file_handler.readlines()
+    for line in lines:
+        line = line.strip().replace("- ", "", 1)   #drop a leading "- " if the file has one
+        if "?" in line:                            #also skips blank lines
+            parts = line.split("?", 1)             #split at the first ? only
+            joke_list.append([parts[0] + "?", parts[1]])   #put the ? back on the setup
+    return joke_list
+
+#Loading Jokes
+jokes = loadJokes()
 
 #start screen
 start_frame = Frame(root, bg=BG)
@@ -33,6 +49,10 @@ Button(start_frame, text="Alexa tell me a Joke", width=25, font=('Roboto', 14),
        bg='#001111', fg='yellow').pack(pady=20)
 Button(start_frame, text="Quit", width=25, font=('Roboto', 14),
        bg='#001111', fg='yellow').pack(pady=5)
+
 #start_frame & joke_frame
 joke_frame.tkraise()
+
+#added temp test
+print(len(jokes), jokes[0])
 root.mainloop()
