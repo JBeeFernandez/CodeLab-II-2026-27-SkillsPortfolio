@@ -1,6 +1,7 @@
 from tkinter import *
 import random
 
+
 root = Tk()
 root.title("Alexa Joke Assistant")
 root.geometry("700x400")
@@ -36,6 +37,14 @@ def showPunchline():
     #shows the stored punchline below the setup
     punchline_label.config(text=current["punchline"])
 # Button(start_frame, text="Alexa tell me a Joke", ..., command=tellJoke)
+
+def pickJoke():
+    #picks a random joke number, never the same one twice in a row
+    number = random.randint(0, len(jokes) - 1)
+    while number == current["last"] and len(jokes) > 1:
+        number = random.randint(0, len(jokes) - 1)
+    current["last"] = number
+    return number
 
 #Loading Jokes
 jokes = loadJokes()
