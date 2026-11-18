@@ -1,6 +1,6 @@
 from tkinter import *
 import random
-
+from tkinter import messagebox
 
 root = Tk()
 root.title("Alexa Joke Assistant")
@@ -14,7 +14,7 @@ current = {"last": -1, "punchline": ""}
 
 #FUNCTIONS
 def loadJokes():
-    # reads randomJokes.txt and returns a list of [setup, punchline] pairs
+    #reads randomJokes.txt and returns a list of [setup, punchline] pairs
     joke_list = []
     with open("randomJokes.txt", "r", encoding="utf-8") as file_handler:
         lines = file_handler.readlines()
@@ -45,6 +45,12 @@ def pickJoke():
         number = random.randint(0, len(jokes) - 1)
     current["last"] = number
     return number
+
+def quitApp():
+    #asks first, then closes the window if the user says yes
+    answer = messagebox.askyesno("Quit", "Do you want to close the app?")
+    if answer:
+        root.destroy()
 
 #Loading Jokes
 jokes = loadJokes()
