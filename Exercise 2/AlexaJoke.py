@@ -32,7 +32,9 @@ def tellJoke():
     current["punchline"] = jokes[number][1]
     joke_frame.tkraise()                      #switch to the joke screen
 
-# CHANGED: the Alexa button on the start screen now gets its command
+def showPunchline():
+    #shows the stored punchline below the setup
+    punchline_label.config(text=current["punchline"])
 # Button(start_frame, text="Alexa tell me a Joke", ..., command=tellJoke)
 
 #Loading Jokes
