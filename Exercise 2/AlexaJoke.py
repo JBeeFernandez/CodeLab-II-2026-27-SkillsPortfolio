@@ -1,4 +1,5 @@
 from tkinter import *
+import random
 
 root = Tk()
 root.title("Alexa Joke Assistant")
@@ -6,6 +7,9 @@ root.geometry("700x400")
 root.resizable(0, 0)
 BG = '#234567' #using the same background
 root['bg'] = BG
+
+#Joke info
+current = {"last": -1, "punchline": ""}
 
 #FUNCTIONS
 def loadJokes():
@@ -19,6 +23,17 @@ def loadJokes():
             parts = line.split("?", 1)             #split at the first ? only
             joke_list.append([parts[0] + "?", parts[1]])   #put the ? back on the setup
     return joke_list
+
+def tellJoke():
+    #picks a random joke, shows its setup and keeps the punchline for later
+    number = random.randint(0, len(jokes) - 1)
+    setup_label.config(text=jokes[number][0])
+    punchline_label.config(text="")           #clear the old punchline
+    current["punchline"] = jokes[number][1]
+    joke_frame.tkraise()                      #switch to the joke screen
+
+# CHANGED: the Alexa button on the start screen now gets its command
+# Button(start_frame, text="Alexa tell me a Joke", ..., command=tellJoke)
 
 #Loading Jokes
 jokes = loadJokes()
