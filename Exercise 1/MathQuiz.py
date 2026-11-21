@@ -29,7 +29,7 @@ MAX_SCORE = 100
 
 MAX_HEALTH = 100
 HEALTH_LOST_PER_WRONG_ANSWER = 10
-HP_BAR_WIDTH = 130 #how wide a full HP bar is (in pixels)
+HP_BAR_WIDTH = 130 # how wide a full HP bar is (in pixels)
 
 LEVEL_NAMES = ["Easy", "Moderate", "Advanced"]
 
