@@ -387,6 +387,60 @@ def toggle_setting(name, button, label):
         else:
             pygame.mixer.music.stop()
 
+message_icon = load_picture(os.path.join(ASSETS, "icon.png"), 48)
+
+# Close the box and remember which button was clicked
+def close_box(box, result, value):
+    result.set(value)
+    box.destroy()
+
+def cafe_message(title, message, yes_text, no_text=None):
+    result = IntVar(value=0)
+
+    # The pop-up window with the cafe icon in the top left corner
+    box = Toplevel(root)
+    box.title(title)
+    box.iconphoto(False, app_icon)
+    box.config(bg=PEACH)
+    box.resizable(0, 0)
+
+    # Put the box in the middle of the game window
+    x = root.winfo_x() + (root.winfo_width() - 500) // 2
+    y = root.winfo_y() + (root.winfo_height() - 260) // 2
+    box.geometry("500x260+" + str(x) + "+" + str(y))
+
+    # Top part: icon and title
+    top_part = Frame(box, bg=PEACH)
+    top_part.pack(pady=(15, 10))
+    Label(top_part, image=message_icon, bg=PEACH).pack(side=LEFT, padx=10)
+    Label(top_part, text=title, font=(FONT, 18, "bold"), bg=PEACH, fg=BROWN).pack(side=LEFT, padx=10)
+
+    # Middle part: the message
+    Label(box, text=message, font=(FONT, 12), bg=WHITE, fg=TEXT).pack(fill=X, padx=8, ipady=22)
+
+    # Bottom part: the buttons (1 = first button clicked, 2 = second button clicked)
+    buttons = Frame(box, bg=PEACH)
+    buttons.pack(pady=18)
+    make_button(buttons, yes_text, GREEN, lambda: close_box(box, result, 1), 10).pack(side=LEFT, padx=20)
+    if no_text != None:
+        make_button(buttons, no_text, PINK, lambda: close_box(box, result, 2), 10).pack(side=LEFT, padx=20)
+
+    # Stop the player clicking the game until this box is closed
+    box.grab_set()
+    box.focus_set()
+    root.wait_window(box)
+    return result.get() == 1
+
+# Use the cafe box for the error message and the Yes/No question
+def cafe_showerror(title, message):
+    cafe_message(title, message, "OK")
+
+def cafe_askyesno(title, message):
+    return cafe_message(title, message, "Yes", "No")
+
+messagebox.showerror = cafe_showerror
+messagebox.askyesno = cafe_askyesno
+
 # How to Play text
 HOW_TO = [
     ("THE GOAL", "Serve 10 customers every day. Each customer asks a maths question."),

@@ -49,6 +49,71 @@ def make_button(parent, text, command, colour=TEAL):
     button.bind("<Button-1>", play_sound, add="+")
     return button
 
+# Student Manager message box
+# A small pop-up window in the navy and teal theme, using icon.png from Assets3.
+# It is used instead of the normal grey messagebox pop-up.
+message_icon = ImageTk.PhotoImage(Image.open(os.path.join(ASSETS_FOLDER, "icon.png")).resize((48, 48)))
+
+# Close the box and remember which button was clicked
+def close_box(box, result, value):
+    result.set(value)
+    box.destroy()
+
+def student_message(title, message, yes_text, no_text=None):
+    result = IntVar(value=0)
+
+    # The pop-up window with the app icon in the top left corner
+    box = Toplevel(root)
+    box.title(title)
+    box.iconphoto(False, app_icon)
+    box.config(bg=NAVY)
+    box.resizable(0, 0)
+
+    # Put the box in the middle of the screen
+    x = (box.winfo_screenwidth() - 500) // 2
+    y = (box.winfo_screenheight() - 260) // 2
+    box.geometry("500x260+" + str(x) + "+" + str(y))
+
+    # Top part: icon and title
+    top_part = Frame(box, bg=NAVY)
+    top_part.pack(pady=(18, 12))
+    Label(top_part, image=message_icon, bg=NAVY).pack(side=LEFT, padx=10)
+    Label(top_part, text=title, font=(FONT, 17, "bold"), bg=NAVY, fg=WHITE).pack(side=LEFT, padx=10)
+
+    # Middle part: the message
+    Label(box, text=message, font=(FONT, 11), bg=WHITE, fg=TEXT).pack(fill=X, padx=10, ipady=22)
+
+    # Bottom part: the buttons (1 = first button clicked, 2 = second button clicked)
+    buttons = Frame(box, bg=NAVY)
+    buttons.pack(pady=18)
+    make_button(buttons, yes_text, lambda: close_box(box, result, 1)).pack(side=LEFT, padx=15)
+    if no_text != None:
+        make_button(buttons, no_text, lambda: close_box(box, result, 2), RED).pack(side=LEFT, padx=15)
+
+    # Keep the box on top of the main window and wait until it is closed
+    box.transient(root)
+    box.focus_force()
+    root.wait_window(box)
+    return result.get() == 1
+
+# Use the Student Manager box for every message and for the Yes/No question
+def student_showinfo(title, message):
+    student_message(title, message, "OK")
+
+def student_showwarning(title, message):
+    student_message(title, message, "OK")
+
+def student_showerror(title, message):
+    student_message(title, message, "OK")
+
+def student_askyesno(title, message):
+    return student_message(title, message, "Yes", "No")
+
+messagebox.showinfo = student_showinfo
+messagebox.showwarning = student_showwarning
+messagebox.showerror = student_showerror
+messagebox.askyesno = student_askyesno
+
 # Read the student information from the text file.
 def load_students():
     students.clear()
@@ -102,6 +167,13 @@ def grade(student):
 def find_student(code):
     for student in students:
         if student["code"] == code:
+            return student
+    return None
+# Find a student using either their name or their student code.
+def find_student_by_text(value):
+    value = value.strip().lower()
+    for student in students:
+        if value == str(student["code"]) or value == student["name"].lower():
             return student
     return None
 def student_report(student):
@@ -306,13 +378,13 @@ def read_student_form(fields):
     return {"code": code, "name": name, "course1": course1,
             "course2": course2, "course3": course3, "exam": exam}
 
-# 6 and 7. Use one form to add a new student or update an existing one.
+# 6 and 8. Use one form to add a new student or update an existing one.
 def show_student_form(update):
     if update == True:
-        show_page("Update a student", "Find a student by code, edit their details and save.")
+        show_page("Update a student", "Find a student by name or code, edit their details and save.")
         search_panel = Frame(page_area, bg=WHITE, padx=18, pady=14)
         search_panel.pack(fill=X, pady=(0, 10))
-        Label(search_panel, text="Student code", bg=WHITE, fg=TEXT).pack(side=LEFT)
+        Label(search_panel, text="Student name or code", bg=WHITE, fg=TEXT).pack(side=LEFT)
         search_entry = Entry(search_panel, font=(FONT, 11), width=18)
         search_entry.pack(side=LEFT, padx=12, ipady=5)
     else:
@@ -320,19 +392,17 @@ def show_student_form(update):
     panel = Frame(page_area, bg=WHITE, padx=22, pady=20, highlightbackground=BORDER, highlightthickness=1)
     panel.pack(fill=X)
     Label(panel, text="STUDENT DETAILS", bg=WHITE, fg=BLUE, font=(FONT, 11, "bold")).pack(anchor=W)
-    fields = make_student_form(panel)
+    # The form uses grid, so it goes in its own frame (pack and grid cannot share a frame)
+    form_frame = Frame(panel, bg=WHITE)
+    form_frame.pack(anchor=W)
+    fields = make_student_form(form_frame)
     selected_code = {"value": None}
     def load_record():
-        try:
-            code = int(search_entry.get())
-        except ValueError:
-            messagebox.showerror("Invalid code", "Enter a student code using numbers.")
-            return
-        student = find_student(code)
+        student = find_student_by_text(search_entry.get())
         if student == None:
-            messagebox.showerror("Not found", "No student has that code.")
+            messagebox.showerror("Not found", "No student has that name or code.")
             return
-        selected_code["value"] = code
+        selected_code["value"] = student["code"]
         for key in fields:
             fields[key].delete(0, END)
             fields[key].insert(0, str(student[key]))
@@ -347,15 +417,17 @@ def show_student_form(update):
             if student["code"] == new_student["code"] and student["code"] != selected_code["value"]:
                 messagebox.showerror("Duplicate code", "That student code is already in use.")
                 return
+        # Change the list and save it to the file first, then show the message
         if update == True:
             for i in range(len(students)):
                 if students[i]["code"] == selected_code["value"]:
                     students[i] = new_student
+            save_students()
             messagebox.showinfo("Updated", "The student record has been updated.")
         else:
             students.append(new_student)
+            save_students()
             messagebox.showinfo("Added", "The student record has been saved.")
-        save_students()
         show_all_students()
     if update == True:
         make_button(search_panel, "Load student", load_record, BLUE).pack(side=LEFT)
@@ -363,23 +435,18 @@ def show_student_form(update):
     else:
         make_button(panel, "Add student", save_record).pack(anchor=W, pady=(12, 0))
 
-# 8. Delete a student after confirmation.
+# 7. Delete a student after confirmation.
 def show_delete_student():
-    show_page("Delete a student", "Enter a student code and confirm before removing the record.")
+    show_page("Delete a student", "Enter a student name or code and confirm before removing the record.")
     panel = Frame(page_area, bg=WHITE, padx=22, pady=22, highlightbackground=BORDER, highlightthickness=1)
     panel.pack(fill=X)
-    Label(panel, text="Student code", bg=WHITE, fg=TEXT, font=(FONT, 10, "bold")).pack(anchor=W)
+    Label(panel, text="Student name or code", bg=WHITE, fg=TEXT, font=(FONT, 10, "bold")).pack(anchor=W)
     code_entry = Entry(panel, font=(FONT, 12), width=25)
     code_entry.pack(anchor=W, pady=10, ipady=6)
     def delete_record():
-        try:
-            code = int(code_entry.get())
-        except ValueError:
-            messagebox.showerror("Invalid code", "Enter a student code using numbers.")
-            return
-        student = find_student(code)
+        student = find_student_by_text(code_entry.get())
         if student == None:
-            messagebox.showerror("Not found", "No student has that code.")
+            messagebox.showerror("Not found", "No student has that name or code.")
             return
         answer = messagebox.askyesno("Confirm deletion", "Delete " + student["name"] + "'s record?")
         if answer == True:
